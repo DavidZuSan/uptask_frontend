@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import ProjectForm from "@/components/projects/ProjectForm";
+import { ProjectFormData } from "@/types/index";
+import { createProject } from "@/api/ProjectAPI";
 
 export default function CreateProjectView() {
-  const initialValues = {
+  const initialValues: ProjectFormData = {
     projectName: "",
     clientName: "",
     description: "",
@@ -15,8 +18,8 @@ export default function CreateProjectView() {
     defaultValues: initialValues,
   });
 
-  const handleForm = (data) => {
-    console.log(data);
+  const handleForm = (data: ProjectFormData) => {
+    createProject(data);
   };
   return (
     <>
@@ -39,6 +42,7 @@ export default function CreateProjectView() {
           onSubmit={handleSubmit(handleForm)}
           noValidate
         >
+          <ProjectForm register={register} errors={errors} />
           <input
             type="submit"
             value="Crear Proyecto"
