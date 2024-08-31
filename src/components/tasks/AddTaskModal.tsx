@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import TaskForm from "./TaskForm";
 import { TaskFormData } from "@/types/index";
-import { createTasks } from "@/api/TaskAPI";
+import { createTask } from "@/api/TaskAPI";
 import { toast } from "react-toastify";
 
 export default function AddTaskModal() {
@@ -43,7 +43,7 @@ export default function AddTaskModal() {
 
   const queryClient = useQueryClient();
   const { mutate } = useMutation({
-    mutationFn: createTasks,
+    mutationFn: createTask,
     onError: (error) => {
       toast.error(error.message);
     },
