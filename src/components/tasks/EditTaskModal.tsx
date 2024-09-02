@@ -11,8 +11,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Task, TaskFormData } from "@/types/index";
 import { useForm } from "react-hook-form";
 import TaskForm from "./TaskForm";
-import { toast } from "react-toastify";
 import { updateTask } from "@/api/TaskAPI";
+import { toast } from "react-toastify";
 
 type EditTaskModalProps = {
   data: Task;
@@ -22,7 +22,7 @@ type EditTaskModalProps = {
 export default function EditTaskModal({ data, taskId }: EditTaskModalProps) {
   const navigate = useNavigate();
 
-  /** Obtener ProjectId */
+  /** Obtener projectId */
   const params = useParams();
   const projectId = params.projectId!;
 
@@ -32,7 +32,10 @@ export default function EditTaskModal({ data, taskId }: EditTaskModalProps) {
     reset,
     formState: { errors },
   } = useForm<TaskFormData>({
-    defaultValues: { name: data.name, description: data.description },
+    defaultValues: {
+      name: data.name,
+      description: data.description,
+    },
   });
 
   const queryClient = useQueryClient();
@@ -42,7 +45,8 @@ export default function EditTaskModal({ data, taskId }: EditTaskModalProps) {
       toast.error(error.message);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["editProject", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
       toast.success(data);
       reset();
       navigate(location.pathname, { replace: true });
@@ -50,11 +54,7 @@ export default function EditTaskModal({ data, taskId }: EditTaskModalProps) {
   });
 
   const handleEditTask = (formData: TaskFormData) => {
-    const data = {
-      projectId,
-      taskId,
-      formData,
-    };
+    const data = { projectId, taskId, formData };
     mutate(data);
   };
 
@@ -104,6 +104,7 @@ export default function EditTaskModal({ data, taskId }: EditTaskModalProps) {
                   noValidate
                 >
                   <TaskForm register={register} errors={errors} />
+
                   <input
                     type="submit"
                     className=" bg-fuchsia-600 hover:bg-fuchsia-700 w-full p-3  text-white font-black  text-xl cursor-pointer"
