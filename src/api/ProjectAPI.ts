@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { dashboardProjectsSchema, Project, ProjectFormData } from "@/types/index";
+import { Project, ProjectFormData } from "@/types/index";
 import { isAxiosError } from "axios";
 
 export async function createProject(formData: ProjectFormData) {

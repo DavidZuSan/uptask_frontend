@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod'
 
 /** Auth & Users */
 const authSchema = z.object({
