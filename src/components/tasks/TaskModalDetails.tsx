@@ -1,4 +1,4 @@
-import { Fragment, useEffect } from "react";
+import { Fragment } from "react";
 import {
   Dialog,
   DialogPanel,
@@ -6,13 +6,19 @@ import {
   Transition,
   TransitionChild,
 } from "@headlessui/react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTaskById, updateStatus } from "@/api/TaskAPI";
 import { toast } from "react-toastify";
+import { getTaskById, updateStatus } from "@/api/TaskAPI";
 import { formatDate } from "@/utils/utils";
-import { statusTranslations } from "@/locales/es";
 import { TaskStatus } from "@/types/index";
+import { statusTranslations } from "@/locales/es";
+import NotesPanel from "../notes/NotesPanel";
 
 export default function TaskModalDetails() {
   const params = useParams();
@@ -25,14 +31,13 @@ export default function TaskModalDetails() {
   const show = taskId ? true : false;
 
   const { data, isError, error } = useQuery({
-    queryKey: ["tasks", taskId],
+    queryKey: ["task", taskId],
     queryFn: () => getTaskById({ projectId, taskId }),
     enabled: !!taskId,
     retry: false,
   });
 
   const queryClient = useQueryClient();
-
   const { mutate } = useMutation({
     mutationFn: updateStatus,
     onError: (error) => {
@@ -50,13 +55,11 @@ export default function TaskModalDetails() {
     const data = { projectId, taskId, status };
     mutate(data);
   };
-  // Manejar la navegación en caso de error usando useEffect
-  useEffect(() => {
-    if (isError) {
-      toast.error(error.message, { toastId: "error" });
-      navigate(`/projects/${projectId}`);
-    }
-  }, [isError, error, navigate, projectId]);
+
+  if (isError) {
+    toast.error(error.message, { toastId: "error" });
+    return <Navigate to={`/projects/${projectId}`} />;
+  }
 
   if (data)
     return (
@@ -92,24 +95,46 @@ export default function TaskModalDetails() {
                 >
                   <DialogPanel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left align-middle shadow-xl transition-all p-16">
                     <p className="text-sm text-slate-400">
-                      Agregada el: {formatDate(data.createdAt)}
+                      Agregada el: {formatDate(data.createdAt)}{" "}
                     </p>
                     <p className="text-sm text-slate-400">
-                      Última actualización: {formatDate(data.updatedAt)}
+                      Última actualización: {formatDate(data.updatedAt)}{" "}
                     </p>
+
                     <DialogTitle
                       as="h3"
                       className="font-black text-4xl text-slate-600 my-5"
                     >
-                      {data.name}
+                      {data.name}{" "}
                     </DialogTitle>
+
                     <p className="text-lg text-slate-500 mb-2">
                       Descripción: {data.description}
                     </p>
+
+                    {data.completedBy.length ? (
+                      <>
+                        <p className="font-bold text-2xl text-slate-600 my-5">
+                          Historial de Cambios
+                        </p>
+
+                        <ul className=" list-decimal">
+                          {data.completedBy.map((activityLog) => (
+                            <li key={activityLog._id}>
+                              <span className="font-bold text-slate-600">
+                                {statusTranslations[activityLog.status]}
+                              </span>{" "}
+                              por: {activityLog.user.name}
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
+
                     <div className="my-5 space-y-3">
                       <label className="font-bold">Estado Actual:</label>
                       <select
-                        className="w-full p-3 bg-white border border-gay-300"
+                        className="w-full p-3 bg-white border border-gray-300"
                         defaultValue={data.status}
                         onChange={handleChange}
                       >
@@ -122,6 +147,8 @@ export default function TaskModalDetails() {
                         )}
                       </select>
                     </div>
+
+                    <NotesPanel notes={data.notes} />
                   </DialogPanel>
                 </TransitionChild>
               </div>
