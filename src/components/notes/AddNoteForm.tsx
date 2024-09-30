@@ -1,18 +1,42 @@
 import { NoteFormData } from "@/types/index";
 import { useForm } from "react-hook-form";
 import ErrorMessage from "../ErrorMessage";
-export default function AddNoteForm() {
-  const initialValues: NoteFormData = { content: "" };
+import { createNote } from "@/api/NoteAPI";
+import { toast } from "react-toastify";
+import { useLocation, useParams } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
+export default function AddNoteForm() {
+  const params = useParams();
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const taskId = queryParams.get("viewTask")!;
+  const projectId = params.projectId!;
+
+  const initialValues: NoteFormData = { content: "" };
   const {
     register,
     handleSubmit,
+    reset
     formState: { errors },
   } = useForm({
     defaultValues: initialValues,
   });
 
-  const handleAddNote = (formData: NoteFormData) => {};
+  const { mutate } = useMutation({
+    mutationFn: createNote,
+    onError: (error) => {
+      toast.error(error.message);
+    },
+    onSuccess: (data) => {
+      toast.success(data);
+    },
+  });
+  const handleAddNote = (formData: NoteFormData) => {
+    mutate({ projectId, taskId, formData });
+    reset();
+  };
   return (
     <form
       onSubmit={handleSubmit(handleAddNote)}
