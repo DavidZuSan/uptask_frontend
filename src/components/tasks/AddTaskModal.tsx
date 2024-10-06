@@ -17,13 +17,13 @@ import { toast } from "react-toastify";
 export default function AddTaskModal() {
   const navigate = useNavigate();
 
-  /** Leer Sin modla existe */
+  /** Leer Si modal existe */
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const modalTask = queryParams.get("newTask") === "true";
+  const modalTask = queryParams.get("newTask");
   const show = modalTask ? true : false;
 
-  /** Obtener ProjectId */
+  /** Obtener projectId */
   const params = useParams();
   const projectId = params.projectId!;
 
@@ -31,15 +31,12 @@ export default function AddTaskModal() {
     name: "",
     description: "",
   };
-
   const {
-    handleSubmit,
     register,
+    handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
-    defaultValues: initialValues,
-  });
+  } = useForm({ defaultValues: initialValues });
 
   const queryClient = useQueryClient();
   const { mutate } = useMutation({
@@ -48,8 +45,8 @@ export default function AddTaskModal() {
       toast.error(error.message);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["editProject", projectId] });
-      toast.success(data);
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+      toast.success(data?.name);
       reset();
       navigate(location.pathname, { replace: true });
     },
@@ -110,10 +107,11 @@ export default function AddTaskModal() {
                     noValidate
                   >
                     <TaskForm register={register} errors={errors} />
+
                     <input
                       type="submit"
+                      className=" bg-fuchsia-600 hover:bg-fuchsia-700 w-full p-3 text-white uppercase font-bold cursor-pointer transition-colors"
                       value="Guardar Tarea"
-                      className="bg-fuchsia-600 hover:bg-fuchsia-700 w-full p-3 text-white uppercase font-bold cursor-pointer transition-colors"
                     />
                   </form>
                 </DialogPanel>
